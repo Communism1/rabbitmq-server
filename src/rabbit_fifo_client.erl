@@ -55,7 +55,7 @@
 -record(consumer, {last_msg_id :: seq() | -1,
                    delivery_count = 0 :: non_neg_integer()}).
 
--record(state, {cluster_name :: ra_cluster_name(),
+-record(state, {cluster_name :: rabbit_amqqueue:name(),
                 servers = [] :: [ra_server_id()],
                 leader :: maybe(ra_server_id()),
                 next_seq = 0 :: seq(),
@@ -88,7 +88,7 @@
 %% @param ClusterName the id of the cluster to interact with
 %% @param Servers The known servers of the queue. If the current leader is known
 %% ensure the leader node is at the head of the list.
--spec init(ra_cluster_name(), [ra_server_id()]) -> state().
+-spec init(rabbit_amqqueue:name(), [ra_server_id()]) -> state().
 init(ClusterName, Servers) ->
     init(ClusterName, Servers, ?SOFT_LIMIT).
 
@@ -98,7 +98,7 @@ init(ClusterName, Servers) ->
 %% @param Servers The known servers of the queue. If the current leader is known
 %% ensure the leader node is at the head of the list.
 %% @param MaxPending size defining the max number of pending commands.
--spec init(ra_cluster_name(), [ra_server_id()], non_neg_integer()) -> state().
+-spec init(rabbit_amqqueue:name(), [ra_server_id()], non_neg_integer()) -> state().
 init(ClusterName = #resource{}, Servers, SoftLimit) ->
     Timeout = application:get_env(kernel, net_ticktime, 60000) + 5000,
     #state{cluster_name = ClusterName,
@@ -106,7 +106,7 @@ init(ClusterName = #resource{}, Servers, SoftLimit) ->
            soft_limit = SoftLimit,
            timeout = Timeout}.
 
--spec init(ra_cluster_name(), [ra_server_id()], non_neg_integer(), fun(() -> ok),
+-spec init(rabbit_amqqueue:name(), [ra_server_id()], non_neg_integer(), fun(() -> ok),
            fun(() -> ok)) -> state().
 init(ClusterName = #resource{}, Servers, SoftLimit, BlockFun, UnblockFun) ->
     Timeout = application:get_env(kernel, net_ticktime, 60000) + 5000,
@@ -397,7 +397,7 @@ purge(Node) ->
     end.
 
 %% @doc returns the cluster name
--spec cluster_name(state()) -> ra_cluster_name().
+-spec cluster_name(state()) -> rabbit_amqqueue:name().
 cluster_name(#state{cluster_name = ClusterName}) ->
     ClusterName.
 
